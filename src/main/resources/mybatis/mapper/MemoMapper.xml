@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.feliz.memo.mapper.MemoMapper">
+
+    <!--
+    Memo[] searchMemo(Memo memo);
+    -->
+    <!--组合查询-->
+    <select id="searchMemo" resultType="com.feliz.memo.bean.Memo">
+        select * from memo where user_id = #{memo.userId}
+        <if test="memo.content != null">
+            and content = #{memo.content}
+        </if>
+        <if test="memo.place != null">
+            and place = #{memo.place}
+        </if>
+    </select>
+
+</mapper>

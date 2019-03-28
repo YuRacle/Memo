@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="zh" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memo备忘录</title>
+  <link rel="stylesheet" type="text/css" href="/bootstrap-3.3.5/css/bootstrap.min.css"/>
+  <link rel="stylesheet" type="text/css" href="/css/default.css">
+  <link rel="stylesheet" type="text/css" href="/css/bootstrap-year-calendar.min.css">
+  <style type="text/css">
+    #calendar {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+<article class="htmleaf-container">
+  <!-- 提醒模态框（Modal） -->
+  <div class="modal fade" id="remind-box" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h4 class="modal-title" id="myModalLabel">备忘录提醒</h4>
+        </div>
+        <div class="modal-body">
+          <div class="modal-body">
+            <input type="hidden" name="event-index" value="">
+            <form class="form-horizontal">
+              <div class="form-group">
+                <label class="col-sm-4 control-label">内容</label>
+                <div class="col-sm-7">
+                  <input name="remind-content" type="text" class="form-control" readonly>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-4 control-label">地点</label>
+                <div class="col-sm-7">
+                  <input name="remind-place" type="text" class="form-control" readonly>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-4 control-label">时间段</label>
+                <div class="col-sm-7">
+                  <div class="input-group input-daterange">
+                    <input name="remind-start-time" type="time" class="form-control" value="00:00" readonly>
+                    <span class="input-group-addon">to</span>
+                    <input name="remind-end-time" type="time" class="form-control" value="00:00" readonly>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-dismiss="modal">确认</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+  </div>
+  <header class="htmleaf-header">
+    <h1>Memo备忘录 <span>Memo</span></h1>
+    <div align="right">
+      <!-- 搜索按钮 -->
+      <button type="button" class="btn btn-info" style="margin-right:10px;" id="search-btn">搜 索</button>
+      <!-- 退出按钮 -->
+      <button type="button" class="btn btn-success space_right" id="quit">退 出</button>
+    </div>
+  </header>
+
+  <!--搜索栏-->
+  <div class="panel panel-default" hidden id="search-bar">
+    <div class="panel-heading">搜索</div>
+    <div class="panel-body">
+      <form class="form-horizontal">
+        <div class="col-lg-6 col-md-12">
+          <div class="form-group">
+            <label class="col-sm-3 col-xs-12 control-label" name="search-content">备忘录内容</label>
+            <div class="col-sm-5 col-xs-6">
+              <input type="text" class="form-control" id="select-content" placeholder="内容关键词">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3 col-xs-12 control-label" name="search-place">地点</label>
+            <div class="col-sm-5 col-xs-6">
+              <input type="text" class="form-control" id="select-place" placeholder="地点">
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6 col-md-12">
+          <div class="form-group">
+            <label class="col-sm-3 col-xs-12 control-label" name="search-date">日期</label>
+            <div class="col-sm-5 col-xs-6">
+              <input type="date" class="form-control" id="select-date" placeholder="">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3 col-xs-12 control-label" name="search-time">时间</label>
+            <div class="col-sm-5 col-xs-6">
+              <input type="time" class="form-control" id="select-time" value="00:00">
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="col-lg-6 col-md-6"></div>
+            <div class="col-lg-6 col-md-6">
+              <button id="select-search" type="button" style="margin-right:10px;" class="btn btn-success">搜索</button>
+              <button id="select-reset" type="button" class="btn btn-warning">重置</button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="calendar"></div>
+</article>
+
+<div class="modal modal-fade" id="event-modal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span>
+        </button>
+        <h4 class="modal-title">
+          添加备忘录
+        </h4>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" name="event-index" value="">
+        <form class="form-horizontal">
+          <div class="form-group">
+            <label class="col-sm-4 control-label">内容</label>
+            <div class="col-sm-7">
+              <input name="event-name" type="text" class="form-control">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-4 control-label">地点</label>
+            <div class="col-sm-7">
+              <input name="event-location" type="text" class="form-control">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-4 control-label">时间段</label>
+            <div class="col-sm-7">
+              <div class="input-group input-daterange">
+                <input name="event-start-time" type="time" class="form-control" value="00:00">
+                <span class="input-group-addon">to</span>
+                <input name="event-end-time" type="time" class="form-control" value="00:00">
+
+                <input name="event-end-date" type="hidden" class="form-control" readonly value="">
+                <input name="event-start-date" type="hidden" class="form-control" readonly value="">
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-4 control-label">设置提醒</label>
+            <div class="col-sm-7">
+              <select class="form-control" name="event-remind-time">
+                <option>不提醒</option>
+                <option>前一个小时</option>
+                <option>前一天</option>
+                <option>前三天</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+        <button type="button" class="btn btn-primary" id="save-event">
+          添加
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="/js/jquery-2.1.1.min.js"></script>
+<script type="text/javascript" src="/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="/js/bootstrap-datepicker.min.js"></script>
+<script type="text/javascript" src="/js/bootstrap-year-calendar.min.js"></script>
+<script type="text/javascript" src="/js/bootstrap-popover.js"></script>
+<script type="text/javascript" th:inline="javascript">
+
+    var index = 0;
+
+    $('#quit').click(function () {
+        window.location.href = "/user/quit";
+        index = 0;
+    });
+
+    $('#search-btn').click(function () {
+        $('#search-bar').toggle();
+    });
+
+    $('#select-search').click(function () {
+        var userId = [[${session.loginUser}]];//当前用户id
+        // var userId = 1;
+        var content = $('#select-content').val();
+        var place = $('#select-place').val();
+        var time = $('#select-time').val();
+        var date = $('#select-date').val();
+        if (date != null) {
+            date.toString();//把时间转换成字符串储存
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: '/memo/search',
+            data: {userId: userId, content: content, place: place, time: time, date: date},
+            cache: false,
+            success: function (data) {
+                var dataSource = [];
+                for (var i in data) {
+                    data[i].startDate = new Date(data[i].date);
+                    data[i].endDate = new Date(data[i].date);
+                    dataSource.push(data[i]);
+                }
+                console.log(dataSource);
+                $('#calendar').data('calendar').setDataSource(dataSource);
+            }
+        });
+    });
+
+    $('#select-reset').click(function () {
+        $('#select-content').val('');
+        $('#select-place').val('');
+        $('#select-date').val('');
+        $('#select-time').val('00:00');
+        getDataSource();
+    });
+
+    function editEvent(event) {
+        $('#event-modal input[name="event-index"]').val(event ? event.id : '');
+        $('#event-modal input[name="event-name"]').val(event ? event.content : '');
+        $('#event-modal input[name="event-location"]').val(event ? event.place : '');
+        $('#event-modal input[name="event-remind-time"]').val(event ? event.remindTime : '');
+        $('#event-modal input[name="event-start-date"]').datepicker('update', event ? event.startDate : '');
+
+        if (event.id != null) {
+            $('#event-modal input[name="event-start-time"]').val('update' ? event.startTime : '00:00');
+            $('#event-modal input[name="event-end-time"]').val('update' ? event.endTime : '00:00');
+        } else {
+            $('#event-modal input[name="event-start-time"]').val('00:00');
+            $('#event-modal input[name="event-end-time"]').val('00:00');
+        }
+        $('#event-modal').modal();
+
+    }
+
+    function deleteEvent(event) {
+        var dataSource = $('#calendar').data('calendar').getDataSource();
+
+        for (var i in dataSource) {
+            if (dataSource[i].id == event.id) {
+                dataSource.splice(i, 1);
+                $.ajax({
+                    type: 'GET',
+                    url: '/memo/delete',
+                    data: {id: event.id},
+                    cache: false,
+                });
+                break;
+            }
+        }
+
+        $('#calendar').data('calendar').setDataSource(dataSource);
+    }
+
+    function saveEvent() {
+
+        var userId = [[${session.loginUser}]];
+        var memo = {
+            userId: userId,//当前用户id
+            id: $('#event-modal input[name="event-index"]').val(),
+            content: $('#event-modal input[name="event-name"]').val(),
+            place: $('#event-modal input[name="event-location"]').val(),
+            startTime: $('#event-modal input[name="event-start-time"]').val(),
+            endTime: $('#event-modal input[name="event-end-time"]').val(),
+            remindTime: $('#event-modal select[name="event-remind-time"]').val(),
+            date: $('#event-modal input[name="event-start-date"]').datepicker('getDate').toString()//把时间转换成字符串储存
+        };
+
+        console.log("memo", memo);
+        $.ajax({
+            type: 'POST',
+            url: '/memo/add',
+            data: JSON.stringify(memo),
+            contentType: "application/json",
+            cache: false,
+            success: function (data) {
+                $('#event-modal').modal('hide');
+                getDataSource();
+            }
+        });
+
+    }
+
+    $(function () {
+        $('#calendar').calendar({
+            enableContextMenu: true,
+            enableRangeSelection: true,
+            contextMenuItems: [
+                {
+                    text: 'Update',
+                    click: editEvent
+                },
+                {
+                    text: 'Delete',
+                    click: deleteEvent
+                }
+            ],
+            selectRange: function (e) {
+                editEvent({startDate: e.startDate, endDate: e.endDate});
+            },
+            mouseOnDay: function (e) {
+                if (e.events.length > 0) {
+                    var content = '';
+
+                    for (var i in e.events) {
+                        content += '<div class="event-tooltip-content">'
+                            + '<div class="event-name" style="color:' + e.events[i].color + '">' + e.events[i].content + '</div>'
+                            + '<div class="event-start-time">' + e.events[i].startTime + " - " + e.events[i].endTime + '</div>'
+                            + '</div>';
+                    }
+
+                    $(e.element).popover({
+                        trigger: 'manual',
+                        container: 'body',
+                        html: true,
+                        content: content
+                    });
+
+                    $(e.element).popover('show');
+                }
+            },
+            mouseOutDay: function (e) {
+                if (e.events.length > 0) {
+                    $(e.element).popover('hide');
+                }
+            },
+            dayContextMenu: function (e) {
+                $(e.element).popover('hide');
+            },
+            dataSource: []
+        });
+
+        $('#save-event').click(function () {
+            saveEvent();
+        });
+
+        getDataSource();
+    });
+
+    function getDataSource() {
+        // 获取session中的用户id
+        var userId = [[${session.loginUser}]];
+        var dataSource = $('#calendar').data('calendar').getDataSource();
+        $.ajax({
+            type: 'GET',
+            url: '/memo/get/memos',
+            data: {userId: userId},
+            contentType: "application/json",
+            cache: false,
+            success: function (data) {
+                dataSource = [];
+                for (var i in data) {
+                    //把字符串转换成Date使用
+                    data[i].startDate = new Date(data[i].date);
+                    data[i].endDate = new Date(data[i].date);
+                    dataSource.push(data[i]);
+                }
+                console.log("getDataSource", dataSource);
+                $('#calendar').data('calendar').setDataSource(dataSource);
+
+                if(index<1) {
+                    index++;
+                    remind();
+                }
+            }
+        });
+
+    }
+
+    //弹窗提醒
+    function remind() {
+        var dataSource = $('#calendar').data('calendar').getDataSource();
+        // var now = new Date();
+        var now = new Date("2019-4-19 1:00");
+        for (var i in dataSource) {
+            switch (dataSource[i].remindTime) {
+                case "不提醒" :
+                    break;
+                case "前一个小时":
+                    var d = dataSource[i].startDate;
+                    var hours = dataSource[i].startTime.split(":")[0];
+                    var min = dataSource[i].startTime.split(":")[1];
+                    var time = d.setHours(hours-1,min);
+                    time = new Date(time);
+                    if (now.getTime() == time.getTime()) {
+                        setRemindData(dataSource[i]);
+                    }
+                    break;
+                case "前一天":
+                    var date = dataSource[i].startDate;
+                    var time = date.setDate(date.getDate()-1);
+                    time = new Date(time);
+                    if (now.getTime() == time.getTime()) {
+                        setRemindData(dataSource[i]);
+                    }
+                    break;
+                case "前三天":
+                    var date = dataSource[i].startDate;
+                    var time = date.setDate(date.getDate()-3);
+                    time = new Date(time);
+                    if (now.getTime() == time.getTime()) {
+                        setRemindData(dataSource[i]);
+                    }
+                    break;
+            }
+        }
+    }
+
+    function setRemindData(memo) {
+        $('#remind-box input[name="remind-content"]').val(memo ? memo.content : '');
+        $('#remind-box input[name="remind-place"]').val(memo ? memo.place : '');
+        $('#remind-box input[name="remind-start-time"]').val(memo ? memo.startTime : '');
+        $('#remind-box input[name="remind-end-time"]').val(memo ? memo.endTime : '');
+        $('#remind-box').modal('show');
+    }
+</script>
+</body>
+</html>
